@@ -1,0 +1,250 @@
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <!-- Nested Row within Card Body -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Audit Report!</h1>
+                            </div>
+                            <!-- <form id="auditForm" class="" data-parsley-validate=""> -->
+                                <div class="form-group row">
+                                    <div class="col-sm-4 mb-3 mb-sm-0">
+                                        <select id="directoryName" class="form-control">
+                                            <option value=""> Select Directory</option>
+                                            <?!= html_directory_options(); ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <input type="date" class="form-control " id="startDate"
+                                            placeholder="Select Date">
+                                    </div>
+                                    <div class="col-sm-2">
+                                      <!-- <button id="btnSubmit" type="button" class="btn btn-primary btn-user btn-block">
+                                          Generate Report
+                                      </button> -->
+                                      <input type="button" value="Generate Report" onclick="totalbandwidthresult();" class="btn btn-primary btn-user btn-block">
+                                    </div>
+                                </div>
+                                
+                            <!-- </form> -->
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-12">
+                      
+                      <!-- DataTales Example -->
+                      <div class="card shadow mb-4" id="reportDatatableDiv">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Audit Report DataTables &nbsp;&nbsp;<a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Download Report</a></h6>
+                            
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <tbody id="audit-data-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                      </div>
+
+                    </div>
+                </div>
+                    
+
+            </div>
+        </div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+      alert("ready");
+      $('#audit-data-list').html('');
+      var table = $('#dataTable').DataTable( {
+        // data: google.script.run.getData(),
+        columns: [
+          { title: "Id" },
+          { title: "Name" }
+        ]
+    } );
+
+      var inputs =[
+        'directoryName',
+        'date'
+      ];
+
+      function getFormData(){
+        var output={};
+        for(var i=0; i<inputs.length;i++){
+          output[inputs[i]] = $('#'+inputs[i]).val());
+        }
+        return output;
+      }
+
+    });
+</script>
+
+<script>
+    $('#reportDatatableDiv').css('display','none');
+
+    function totalbandwidthresult() {
+        // alert("fdf");
+        google.script.run.withSuccessHandler(function(auditdata){
+          let data = auditdata.data;
+          let headers = auditdata.headers;
+          console.log(auditdata);
+          // let filename = new Date();
+          // let rows= dataObj = auditdata.split(",");
+          // console.log("rows");
+          // console.log(rows);
+          // exportToCsv(filename, rows);
+          showdatajson(headers, data);
+          
+        })
+        // .auditDataTable();
+        .getAuditJsonData();
+        // .auditDataTable(); // Run the apps script
+        // uploadFileToGCS();
+        // .convertRangeToCsvFile(); //
+    }
+
+    function showdata(headers, data){ // Generate the table from the data array
+      $('#reportDatatableDiv').css('display','block');
+        
+        //build your column object dynamically
+        var columns = [];
+        headers.forEach(function(header){
+          columns.push({"title":header})
+        });
+        console.log("data:"+data);
+        // $('#audit-data-list').html(data);
+        $('#dataTable').dataTable({
+          data: data,
+          order: [[0,"asc"]],
+          autoWidth: true,
+          columns: [columns],
+          paging:true,
+          pageLength:20,
+          saveState:true,
+          destroy:true,
+        });
+    }
+
+    function showdatajson(headers, data){ // Generate the table from the data array
+      $('#reportDatatableDiv').css('display','block');
+        
+        //build your column object dynamically
+        var columns = [];
+        headers.forEach(function(header){
+          columns.push({"title":header})
+        });
+        console.log("data"+data);
+        // var jsonData = [
+        //     { "meta": { "version": 1, "type": "test" } }
+        // ];
+        // $('#audit-data-list').html(jsonData);
+        // $('#dataTable').dataTable({
+        //   data: jsonData,
+        //   order: [[0,"asc"]],
+        //   autoWidth: true,
+        //   columns: columns,
+        //   paging:true,
+        //   pageLength:20,
+        //   saveState:true,
+        //   destroy:true,
+        // });
+
+
+        $('#dataTable').DataTable({
+            data: data,
+            "columns": [
+                { "data": "resource_name" ,"title":"Resource Name"},
+                { "data": "project_id" ,"title":"Project ID"},
+                { "data": "resource_type" ,"title":"Resource Type"},
+                { "data": "creation_time" ,"title":"Creation Time"},
+                {"data":"metadata", "title":"Meta Data"}
+            ]
+        });
+    }
+
+    function jsonToCsv(json3) {
+      var json = json3.items;
+      var fields = Object.keys(json[0])
+      var replacer = function(key, value) { return value === null ? '' : value } 
+      var csv = json.map(function(row){
+        return fields.map(function(fieldName){
+          return JSON.stringify(row[fieldName], replacer)
+        }).join(',')
+      })
+      csv.unshift(fields.join(',')) // add header column
+      csv = csv.join('\r\n');
+      console.log(csv)
+    }
+
+    function exportToCsv(filename, rows) {
+          var processRow = function (row) {
+              var finalVal = '';
+              for (var j = 0; j < row.length; j++) {
+                  var innerValue = row[j] === null ? '' : row[j].toString();
+                  if (row[j] instanceof Date) {
+                      innerValue = row[j].toLocaleString();
+                  };
+                  var result = innerValue.replace(/"/g, '""');
+                  if (result.search(/("|,|\n)/g) >= 0)
+                      result = '"' + result + '"';
+                  if (j > 0)
+                      finalVal += ',';
+                  finalVal += result;
+              }
+              return finalVal + '\n';
+          };
+
+          var csvFile = '';
+          for (var i = 0; i < rows.length; i++) {
+              csvFile += processRow(rows[i]);
+          }
+
+          var blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
+          if (navigator.msSaveBlob) { // IE 10+
+              navigator.msSaveBlob(blob, filename);
+          } else {
+              var link = document.createElement("a");
+              if (link.download !== undefined) { // feature detection
+                  // Browsers that support HTML5 download attribute
+                  var url = URL.createObjectURL(blob);
+                  link.setAttribute("href", url);
+                  link.setAttribute("download", filename);
+                  link.style.visibility = 'hidden';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+              }
+          }
+      }
+</script>
+
+<script>
+// $('#reportDatatableDiv').css('display','none');
+
+// $("form#auditForm").parsley()
+// .on('field:validated', function() {
+//   var ok = $('.parsley-error').length() === 0;
+//   // Note: Extra validation goes here if other functions ca modify field data
+// })
+// .on('form:validate', function(formInstance){
+//   var ok = formInstance.isValid();
+//   if(ok===false){
+//     // Note: Extra validation goes here if expectations to validation logic are possible
+//   }
+// })
+// .on('form:submit', function(){
+//   alert("Form submit");
+  
+//   // Prevent page load 
+//   return false;
+// });
+</script>
