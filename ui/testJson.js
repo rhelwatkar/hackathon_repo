@@ -3,10 +3,8 @@ var headers=[
   "Resource Type",
   "Project ID",
   "Creation Time",
-  "Metadata"
+  "Discovery Document Uri"
 ];
-
-
 
 function getAuditJsonData() {
   var result = [];
@@ -21,12 +19,9 @@ function getAuditJsonData() {
     var project_id = audit_data.ancestors.toString();
       project_id = project_id.split("/").pop();
 
-    // var project_id = audit_data.ancestors;
-    // .replace("projects/","");
-    // Logger.log("project_id"+project_id);
     var creation_time = audit_data.time;
-    var metadata = JSON.stringify(audit_data.metadata);
-    // Logger.log("creation_time"+creation_time);
+    var metadata = audit_data.metadata.discoveryDocumentUri;//JSON.stringify(audit_data.metadata.discoveryName);
+
     var row = {
       "resource_name":resource_name,
       "resource_type":resource_type,
@@ -37,7 +32,6 @@ function getAuditJsonData() {
     
     result.push(row);
   });
-  // Logger.log("result:");
-  // Logger.log(result);
+
   return {'headers':headers, 'data':result}
 }

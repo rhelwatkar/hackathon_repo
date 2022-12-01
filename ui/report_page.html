@@ -1,4 +1,34 @@
 
+        <style>
+.loader {
+  border-top: 16px solid blue;
+  border-right: 16px solid green;
+  border-bottom: 16px solid red;
+  border-left: 16px solid pink;
+  
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.center-pos {
+  /* border: 5px solid; */
+  display: flex;
+  justify-content: center;
+}
+</style>
+
         <div class="card o-hidden border-0 shadow-lg my-5">
             <div class="card-body p-0">
                 <!-- Nested Row within Card Body -->
@@ -29,7 +59,10 @@
                                 </div>
                                 
                             <!-- </form> -->
-                            
+                            <div class="center-pos">
+                              <div class="loader"></div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -63,36 +96,36 @@
 
     $(document).ready(function () {
       alert("ready");
-      $('#audit-data-list').html('');
-      var table = $('#dataTable').DataTable( {
-        // data: google.script.run.getData(),
-        columns: [
-          { title: "Id" },
-          { title: "Name" }
-        ]
-    } );
-
+    //   $('#audit-data-list').html('');
+    //   var table = $('#dataTable').DataTable( {
+    //     // data: google.script.run.getData(),
+    //     // columns: [
+    //     //   { title: "Id" },
+    //     //   { title: "Name" }
+    //     // ]
+    // } );
       var inputs =[
         'directoryName',
         'date'
       ];
 
-      function getFormData(){
-        var output={};
-        for(var i=0; i<inputs.length;i++){
-          output[inputs[i]] = $('#'+inputs[i]).val());
-        }
-        return output;
+    function getFormData(){
+      var output={};
+      for(var i=0; i<inputs.length;i++){
+        output[inputs[i]] = $('#'+inputs[i]).val());
       }
-
+      return output;
+    }
     });
 </script>
 
 <script>
     $('#reportDatatableDiv').css('display','none');
+    $('.loader').css('display','none');
 
     function totalbandwidthresult() {
-        // alert("fdf");
+         $('.loader').css('display','block');
+
         google.script.run.withSuccessHandler(function(auditdata){
           let data = auditdata.data;
           let headers = auditdata.headers;
@@ -112,63 +145,27 @@
         // .convertRangeToCsvFile(); //
     }
 
-    function showdata(headers, data){ // Generate the table from the data array
-      $('#reportDatatableDiv').css('display','block');
-        
-        //build your column object dynamically
-        var columns = [];
-        headers.forEach(function(header){
-          columns.push({"title":header})
-        });
-        console.log("data:"+data);
-        // $('#audit-data-list').html(data);
-        $('#dataTable').dataTable({
-          data: data,
-          order: [[0,"asc"]],
-          autoWidth: true,
-          columns: [columns],
-          paging:true,
-          pageLength:20,
-          saveState:true,
-          destroy:true,
-        });
-    }
-
     function showdatajson(headers, data){ // Generate the table from the data array
       $('#reportDatatableDiv').css('display','block');
-        
+     
         //build your column object dynamically
-        var columns = [];
-        headers.forEach(function(header){
-          columns.push({"title":header})
-        });
-        console.log("data"+data);
-        // var jsonData = [
-        //     { "meta": { "version": 1, "type": "test" } }
-        // ];
-        // $('#audit-data-list').html(jsonData);
-        // $('#dataTable').dataTable({
-        //   data: jsonData,
-        //   order: [[0,"asc"]],
-        //   autoWidth: true,
-        //   columns: columns,
-        //   paging:true,
-        //   pageLength:20,
-        //   saveState:true,
-        //   destroy:true,
+        // var columns = [];
+        // headers.forEach(function(header){
+        //   columns.push({"title":header})
         // });
-
-
+        console.log("data"+data);
+        
         $('#dataTable').DataTable({
             data: data,
             "columns": [
-                { "data": "resource_name" ,"title":"Resource Name"},
-                { "data": "project_id" ,"title":"Project ID"},
-                { "data": "resource_type" ,"title":"Resource Type"},
-                { "data": "creation_time" ,"title":"Creation Time"},
-                {"data":"metadata", "title":"Meta Data"}
+                { "data": "resource_name" ,"title":headers[0]},
+                { "data": "project_id" ,"title":headers[1]},
+                { "data": "resource_type" ,"title":headers[2]},
+                { "data": "creation_time" ,"title":headers[3]},
+                {"data":"metadata", "title":headers[4]}
             ]
         });
+        $('.loader').css('display','none');
     }
 
     function jsonToCsv(json3) {
@@ -225,26 +222,4 @@
               }
           }
       }
-</script>
-
-<script>
-// $('#reportDatatableDiv').css('display','none');
-
-// $("form#auditForm").parsley()
-// .on('field:validated', function() {
-//   var ok = $('.parsley-error').length() === 0;
-//   // Note: Extra validation goes here if other functions ca modify field data
-// })
-// .on('form:validate', function(formInstance){
-//   var ok = formInstance.isValid();
-//   if(ok===false){
-//     // Note: Extra validation goes here if expectations to validation logic are possible
-//   }
-// })
-// .on('form:submit', function(){
-//   alert("Form submit");
-  
-//   // Prevent page load 
-//   return false;
-// });
 </script>
