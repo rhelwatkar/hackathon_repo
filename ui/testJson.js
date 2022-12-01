@@ -1,14 +1,27 @@
 var headers=[
   "Resource Name",
-  "Resource Type",
   "Project ID",
+  "Resource Type",
   "Creation Time",
   "Discovery Document Uri"
 ];
 
-function getAuditJsonData() {
-  var result = [];
+function getAuditJsonData(inputs=null) {
+  // Logger.log(inputs);
+  // return;
+
+  var directoryName = 'outputData';
   var jsData = outputData;
+  if(inputs){
+    directoryName = inputs;
+    // var created_date = inputs.date;
+  }
+  if(directoryName == 'outputData1'){
+    jsData = outputData1;
+  }
+  
+  var result = [];
+  
   jsData.forEach(function(audit_data){
     var resource_name = audit_data.name.toString();
       resource_name = resource_name.split(".com/").pop();
@@ -33,5 +46,5 @@ function getAuditJsonData() {
     result.push(row);
   });
 
-  return {'headers':headers, 'data':result}
+  return {'headers':headers, 'data':result, "jsData":jsData}
 }

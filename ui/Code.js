@@ -67,8 +67,6 @@ function getUserEmail(){
 function getUserName()
 {
   let fullName = getUserEmail();
-  // if(ContactsApp.findByEmailAddress(getUserEmail()).getFullName()!=undefined){
-  //   fullName = ContactsApp.findByEmailAddress(getUserEmail()).getFullName();
-  // }
+  
   return fullName;
 }

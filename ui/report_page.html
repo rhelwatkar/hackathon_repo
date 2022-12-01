@@ -1,32 +1,31 @@
+<style>
+        .loader {
+          border-top: 16px solid blue;
+          border-right: 16px solid green;
+          border-bottom: 16px solid red;
+          border-left: 16px solid pink;
+          
+          border-radius: 50%;
+          width: 120px;
+          height: 120px;
+          -webkit-animation: spin 2s linear infinite;
+          animation: spin 2s linear infinite;
+        }
 
-        <style>
-.loader {
-  border-top: 16px solid blue;
-  border-right: 16px solid green;
-  border-bottom: 16px solid red;
-  border-left: 16px solid pink;
-  
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  -webkit-animation: spin 2s linear infinite;
-  animation: spin 2s linear infinite;
-}
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
 
-@-webkit-keyframes spin {
-  0% { -webkit-transform: rotate(0deg); }
-  100% { -webkit-transform: rotate(360deg); }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.center-pos {
-  /* border: 5px solid; */
-  display: flex;
-  justify-content: center;
-}
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .center-pos {
+          /* border: 5px solid; */
+          display: flex;
+          justify-content: center;
+        }
 </style>
 
         <div class="card o-hidden border-0 shadow-lg my-5">
@@ -36,25 +35,30 @@
                     <div class="col-lg-12">
                         <div class="p-5">
                             <div class="text-center">
-                                <h1 class="h4 text-gray-900 mb-4">Audit Report!</h1>
+                                <h1 class="h4 text-gray-900 mb-4">Asset-Inventory!</h1>
                             </div>
                             <!-- <form id="auditForm" class="" data-parsley-validate=""> -->
                                 <div class="form-group row">
                                     <div class="col-sm-4 mb-3 mb-sm-0">
                                         <select id="directoryName" class="form-control">
-                                            <option value=""> Select Directory</option>
+                                            <option value="outputData">Complete Inventory</option>
                                             <?!= html_directory_options(); ?>
                                         </select>
                                     </div>
                                     <div class="col-sm-4">
-                                        <input type="date" class="form-control " id="startDate"
-                                            placeholder="Select Date">
+                                      <select id="date" class="form-control">
+                                          <option value="01-12-2022"> 01-12-2022</option>
+                                          <option value="30-11-2022"> 30-11-2022</option>
+                                          <option value="29-11-2022"> 29-11-2022</option>
+                                        </select>
+
+                                       
                                     </div>
                                     <div class="col-sm-2">
                                       <!-- <button id="btnSubmit" type="button" class="btn btn-primary btn-user btn-block">
                                           Generate Report
                                       </button> -->
-                                      <input type="button" value="Generate Report" onclick="totalbandwidthresult();" class="btn btn-primary btn-user btn-block">
+                                      <input type="button" value="Generate Report" id="clicker" class="btn btn-primary btn-user btn-block">
                                     </div>
                                 </div>
                                 
@@ -73,7 +77,7 @@
                       <!-- DataTales Example -->
                       <div class="card shadow mb-4" id="reportDatatableDiv">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Audit Report DataTables &nbsp;&nbsp;<a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Download Report</a></h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Asset-Inventory DataTables &nbsp;&nbsp;<a id="downloadData" href="https://storage.cloud.google.com/evidence_data/2022-12-01/Inventory.json" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" target="_blank"><i class="fas fa-download fa-sm text-white-50"></i> Download Report</a></h6>
                             
                         </div>
                         <div class="card-body">
@@ -95,27 +99,27 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-      alert("ready");
-    //   $('#audit-data-list').html('');
-    //   var table = $('#dataTable').DataTable( {
-    //     // data: google.script.run.getData(),
-    //     // columns: [
-    //     //   { title: "Id" },
-    //     //   { title: "Name" }
-    //     // ]
-    // } );
-      var inputs =[
-        'directoryName',
-        'date'
-      ];
+      // alert("ready");
+      $('.loader').css('display','none');
+      let jsData =[];
+      $("#clicker").click(function () {
+        $('.loader').css('display','block');
+        var directory = document.getElementById("directoryName").value;
+        
+        console.log("directory:"+directory);
+        google.script.run.withSuccessHandler(function(auditdata){
+          let data = auditdata.data;
+          let headers = auditdata.headers;
+          console.log(auditdata);
+          jsData=auditdata.jsData;
+          showdatajson(headers, data);
+        })
+        // .auditDataTable();
+        .getAuditJsonData(directory);
+    });
 
-    function getFormData(){
-      var output={};
-      for(var i=0; i<inputs.length;i++){
-        output[inputs[i]] = $('#'+inputs[i]).val());
-      }
-      return output;
-    }
+     
+
     });
 </script>
 
@@ -139,7 +143,7 @@
           
         })
         // .auditDataTable();
-        .getAuditJsonData();
+        .getAuditJsonData(getFormData());
         // .auditDataTable(); // Run the apps script
         // uploadFileToGCS();
         // .convertRangeToCsvFile(); //
@@ -158,16 +162,19 @@
         $('#dataTable').DataTable({
             data: data,
             "columns": [
-                { "data": "resource_name" ,"title":headers[0]},
-                { "data": "project_id" ,"title":headers[1]},
-                { "data": "resource_type" ,"title":headers[2]},
-                { "data": "creation_time" ,"title":headers[3]},
-                {"data":"metadata", "title":headers[4]}
-            ]
+                { "data": "resource_name" ,"title":headers[0], width: '20%'},
+                { "data": "project_id" ,"title":headers[1], width: '20%'},
+                { "data": "resource_type" ,"title":headers[2], width: '20%'},
+                { "data": "creation_time" ,"title":headers[3], width: '20%'},
+                {"data":"metadata", "title":headers[4], width: '20%'}
+            ],
+            "destroy":true
         });
         $('.loader').css('display','none');
     }
 
+    
+    
     function jsonToCsv(json3) {
       var json = json3.items;
       var fields = Object.keys(json[0])

@@ -3,14 +3,24 @@
 var audit_data_list;
 
 var directory_options={
-  'Dir 1':'Dir 1',
-  'Dir 2':'Dir 2',
+  'outputData1':'Cloud Storage',
+  'outputData2':'Compute',
+  'outputData3':'Application',
+  'outputData4':'Cloud Functions',
+  'outputData5':'Database',
+  'outputData6':'Docker Image',
+  'outputData7':'Firewall',
+  'outputData8':'Images',
+  'outputData9':'Network',
+  'outputData10':'Repository',
+  'outputData11':'Role',
+  'outputData12':'Topic',
 };
 
 function html_directory_options(){
     var output ='';
     for(var dir_id in directory_options) {
-        output+="<option id='"+dir_id+"' value='"+dir_id+"'>"+dir_id+"</option>";
+        output+="<option id='"+dir_id+"' value='"+dir_id+"'>"+directory_options[dir_id]+"</option>";
     }
     return output;
 }
